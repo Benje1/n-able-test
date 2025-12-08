@@ -2,9 +2,10 @@ package ServiceMonitor
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 type ServiceMonitor struct {
@@ -40,7 +41,7 @@ func SetupServiceMonitor() (ServiceMonitor, error) {
 
 	var service ServiceMonitor
 	if err := yaml.Unmarshal(data, &service); err != nil {
-		return ServiceMonitor{}, fmt.Errorf("could not read yaml file, file mignt not be in correct format", err)
+		return ServiceMonitor{}, fmt.Errorf("could not read yaml file, file mignt not be in correct format: %w", err)
 	}
 
 	return service, nil
@@ -69,11 +70,9 @@ func (sm ServiceMonitor) CallServices() ([]Response, error) {
 		if err != nil {
 			errs = append(errs, err)
 		} else {
-			res.UpdateFileds()
+			res = res.UpdateFileds()
 			responses = append(responses, res)
 		}
-
-		fmt.Println(res.Name, res.Status, res.Error, res.ResponseTime)
 	}
 
 	if len(errs) != 0 {

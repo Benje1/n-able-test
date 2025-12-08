@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"n-able-test/ServiceMonitor"
 	"net/http"
 )
@@ -33,4 +34,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(status)
 	})
+
+	fmt.Println("Server listening on :8080")
+	fmt.Println(http.ListenAndServe(":8080", nil))
 }

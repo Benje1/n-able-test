@@ -8,8 +8,8 @@ import (
 type Response struct {
 	Name         string  `json:"name"`
 	Status       Status  `json:"status"`
-	ResponseTime *uint   `json:"response_time_ms"`
-	Error        *string `json:"error"`
+	ResponseTime *uint   `json:"response_time_ms,omitempty"`
+	Error        *string `json:"error,omitempty"`
 }
 
 type Status string
@@ -21,15 +21,15 @@ const (
 
 // There must be a better way of doing this but I was short on time
 // Only returning the properties that are wanted
-func (res Response) UpdateFileds() {
+func (res Response) UpdateFileds() Response {
 	if res.Status == Down {
-		res = Response{
+		return Response{
 			Name:   res.Name,
 			Status: res.Status,
 			Error:  res.Error,
 		}
 	}
-	res = Response{
+	return Response{
 		Name:         res.Name,
 		Status:       res.Status,
 		ResponseTime: res.ResponseTime,
@@ -45,21 +45,20 @@ func CallEndpoints(service Service) (Response, error) {
 
 	defer resp.Body.Close()
 
-	ducration := uint(time.Since(start))
+	duration := uint(time.Since(start).Milliseconds())
 	respo := Response{
 		Name:         service.Name,
-		Status:       getStatusFromCode(resp.StatusCode),
+		Status:       getStatusFromCode(service, resp.StatusCode, duration),
 		Error:        &resp.Status,
-		ResponseTime: &ducration,
+		ResponseTime: &duration,
 	}
 
 	return respo, err
 }
 
-func getStatusFromCode(code int) Status {
-	if code >= 200 && code < 300 {
+func getStatusFromCode(service Service, code int, duration uint) Status {
+	if code >= 200 && code < 300 || service.Timeout > duration {
 		return Healthy
 	}
 	return Down
-
 }
