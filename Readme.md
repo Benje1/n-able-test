@@ -6,13 +6,16 @@ I has a basic untested github CI pipline that should run all the tests and if th
 
 I did not know how to add AWS services in so I just gave a basic curl call lambda.
 
-Assumptions I made:
+Assumption I made:
 Each server does not need to change too often, but as it does not have a database or any need for non live data restarting it with a new yaml file should not be a problem.
 
 
 ```
 To get the go mods:
 go mod downlaod
+
+To run as a non dockerd server:
+go run main.go
 
 To run the tests:
 go test .\ServiceMonitor\
