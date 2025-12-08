@@ -70,7 +70,6 @@ func (sm ServiceMonitor) CallServices() ([]Response, error) {
 		if err != nil {
 			errs = append(errs, err)
 		} else {
-			res = res.UpdateFileds()
 			responses = append(responses, res)
 		}
 	}

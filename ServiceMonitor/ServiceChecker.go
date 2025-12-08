@@ -46,19 +46,26 @@ func CallEndpoints(service Service) (Response, error) {
 	defer resp.Body.Close()
 
 	duration := uint(time.Since(start).Milliseconds())
+	status, errorCode := getStatusFromCode(service, resp.StatusCode, duration, resp.Status)
 	respo := Response{
-		Name:         service.Name,
-		Status:       getStatusFromCode(service, resp.StatusCode, duration),
-		Error:        &resp.Status,
+		Name:   service.Name,
+		Status: status,
+		// Should have a function that modifies this error
+		Error:        &errorCode,
 		ResponseTime: &duration,
 	}
 
-	return respo, err
+	return respo.UpdateFileds(), err
 }
 
-func getStatusFromCode(service Service, code int, duration uint) Status {
-	if code >= 200 && code < 300 || service.Timeout > duration {
-		return Healthy
+func getStatusFromCode(service Service, code int, duration uint, statusCode string) (Status, string) {
+	if duration > service.Timeout {
+		return Down, "timedout"
 	}
-	return Down
+
+	if code >= 200 && code < 300 {
+		return Healthy, statusCode
+	}
+
+	return Down, statusCode
 }
