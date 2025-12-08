@@ -1,0 +1,30 @@
+# Build stage
+FROM golang:1.24 AS builder
+
+WORKDIR /app
+
+# Cache dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source
+COPY . .
+
+# Build the binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
+
+# Runtime stage
+FROM alpine:3.19
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/app .
+
+# This line would be abesnt in the 'production' build
+COPY services.yaml .
+
+# Expose port (change if needed)
+EXPOSE 8080
+
+CMD ["./app"]

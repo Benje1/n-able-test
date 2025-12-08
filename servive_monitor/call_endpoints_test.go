@@ -1,4 +1,4 @@
-package ServiceMonitor
+package servive_monitor
 
 import "testing"
 
@@ -31,13 +31,10 @@ func TestCallEndpoints(t *testing.T) {
 			Timeout: 1,
 		}
 
-		res, err := CallEndpoints(service)
-		if err != nil {
-			t.Errorf("no error expected, got: %s", err.Error())
-		}
-
-		if *res.Error != "timedout" {
-			t.Errorf("error code should be timeout: got %s", *res.Error)
+		// No response as would be nil
+		_, err := CallEndpoints(service)
+		if err == nil {
+			t.Errorf("timeout error expected")
 		}
 	})
 

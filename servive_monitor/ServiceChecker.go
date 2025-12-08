@@ -1,4 +1,4 @@
-package ServiceMonitor
+package servive_monitor
 
 import (
 	"net/http"
@@ -37,8 +37,12 @@ func (res Response) UpdateFileds() Response {
 }
 
 func CallEndpoints(service Service) (Response, error) {
+	client := http.Client{
+		Timeout: time.Duration(service.Timeout) * time.Millisecond,
+	}
+
 	start := time.Now()
-	resp, err := http.Get(service.Url)
+	resp, err := client.Get(service.Url)
 	if err != nil {
 		return Response{}, err
 	}
@@ -46,26 +50,22 @@ func CallEndpoints(service Service) (Response, error) {
 	defer resp.Body.Close()
 
 	duration := uint(time.Since(start).Milliseconds())
-	status, errorCode := getStatusFromCode(service, resp.StatusCode, duration, resp.Status)
+
 	respo := Response{
 		Name:   service.Name,
-		Status: status,
+		Status: getStatusFromCode(resp.StatusCode),
 		// Should have a function that modifies this error
-		Error:        &errorCode,
+		Error:        &resp.Status,
 		ResponseTime: &duration,
 	}
 
-	return respo.UpdateFileds(), err
+	return respo.UpdateFileds(), nil
 }
 
-func getStatusFromCode(service Service, code int, duration uint, statusCode string) (Status, string) {
-	if duration > service.Timeout {
-		return Down, "timedout"
-	}
-
+func getStatusFromCode(code int) Status {
 	if code >= 200 && code < 300 {
-		return Healthy, statusCode
+		return Healthy
 	}
 
-	return Down, statusCode
+	return Down
 }

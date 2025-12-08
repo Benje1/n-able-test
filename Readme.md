@@ -1,6 +1,6 @@
 This is a basic service health monitoring programme
 
-It is built so that it can have all that it needs to set itself up. When using docker the user should mount the services.yaml file (if this was pruduction I would not have had it there as it does not make sense to have a default service)
+It is built so that it can have all that it needs to set itself up. When using docker the user should mount the services.yaml file (if this was pruduction I would not have had it there as it does not make sense to have a default service). As a test I am keeping it in so that it is easier to test
 
 I has a basic untested github CI pipline that should run all the tests and if they succed, and the branch is main, build an image and in a docker container
 
@@ -16,6 +16,15 @@ go mod downlaod
 
 To run as a non dockerd server:
 go run main.go
+
+To create new docker container:
+docker build -f docker -t nable-benjamin .
+
+To unpack the sent container:
+docker load -i benjamin-test.tar
+
+To run as a docketed server:
+docker run -p 8080:8080 nable-benjamin:latest
 
 To run the tests:
 go test .\ServiceMonitor\

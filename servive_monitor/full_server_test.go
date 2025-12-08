@@ -1,4 +1,4 @@
-package ServiceMonitor
+package servive_monitor
 
 import "testing"
 

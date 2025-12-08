@@ -1,4 +1,4 @@
-package ServiceMonitor
+package servive_monitor
 
 import (
 	"fmt"
@@ -81,15 +81,18 @@ func (sm ServiceMonitor) CallServices() ([]Response, error) {
 }
 
 func checkHealth(responses []Response) ServerStatus {
-	checker := make(map[string]bool)
+	checker := make(map[string]struct{})
 	for _, res := range responses {
-		checker[string(res.Status)] = true
+		checker[string(res.Status)] = struct{}{}
 	}
+	// If map is larger than 1 then we have mixed statuses
 	if len(checker) > 1 {
 		return ServerDegraded
 	}
+	// Otherwise check if healthy
 	if _, ok := checker[string(Healthy)]; ok {
 		return ServerHealthy
 	}
+	// Default down
 	return ServerDown
 }
