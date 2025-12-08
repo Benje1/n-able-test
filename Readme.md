@@ -9,6 +9,8 @@ A GitHub Actions pipeline is included. It runs all tests, and if they succeed (a
 
 A minimal example of how this could be deployed to AWS (via a simple curl-based Lambda) is also included, but it is not a full AWS infrastructure implementation.
 
+I did use the yaml as described in the task outline
+
 ## Assumptions
 - Services will not change frequently.
 - The program does not require persistent state or a database.
@@ -19,29 +21,28 @@ A minimal example of how this could be deployed to AWS (via a simple curl-based 
 ## Usage
 
 ```
-Install Go dependencies
-go mod download
-
-
 To run as a non dockerd server:
 go run main.go
 
-To create new docker container:
-docker build -f docker -t nable-benjamin .
+Install Go dependencies
+go mod download
 
-To run as a docketed server:
-docker run -p 8080:8080 nable-benjamin:latest
+To run the tests:
+go test .\ServiceMonitor\
 
 Load a container image from a .tar file:
 docker load -i benjamin-test.tar
+
+To run as a docketed server:
+docker run -p 8080:8080 nable-benjamin:latest
 
 To run docker with a mounterd services.yaml:
 docker run -p 8080:8080 \
   -v $(pwd)/services.yaml:/app/services.yaml \
   nable-benjamin:latest
 
-To run the tests:
-go test .\ServiceMonitor\
+To create new docker container:
+docker build -f docker -t nable-benjamin .
 
 To hit the endoint:
 curl http://localhost:8080/health/aggregate
