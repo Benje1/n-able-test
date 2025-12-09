@@ -5,7 +5,7 @@ It is designed to set itself up using only a `services.yaml` configuration file.
 
 In production you would normally mount your own `services.yaml` rather than bundling a default one inside the container. For testing purposes, a default file is included in the repo.
 
-A GitHub Actions pipeline is included. It runs all tests, and if they succeed (and the branch is `main`), it will build a Docker image automatically.
+A GitHub Actions pipeline is included. It runs all tests, and if they succeed (and the branch is `main`), it should build a Docker image automatically.
 
 A minimal example of how this could be deployed to AWS (via a simple curl-based Lambda) is also included, but it is not a full AWS infrastructure implementation.
 
