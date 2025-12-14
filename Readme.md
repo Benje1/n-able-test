@@ -47,3 +47,8 @@ docker build -f docker -t nable-benjamin .
 To hit the endoint:
 curl http://localhost:8080/health/aggregate
 ```
+
+Post submission thoughts
+I should have found a way for it to be fault tolerant, if one if the endpoints gets timed out then the whole process fails. It would be good to know that as part of the whole as that could indicate something, similar to if the endpoint is incorrect.
+
+As further refinement it would be good if a user token, or something similar, could be given to the server so it can also check permission based endpoints. This would benefit from the above point
