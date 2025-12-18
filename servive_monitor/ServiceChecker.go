@@ -38,7 +38,7 @@ func (res Response) UpdateFileds() Response {
 }
 
 func CallEndpoints(service Service, client http.Client) Response {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(service.Timeout))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(service.Timeout)*time.Millisecond)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, service.Url, nil)
