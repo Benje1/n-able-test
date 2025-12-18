@@ -16,10 +16,7 @@ func TestServiceMonitor(t *testing.T) {
 			},
 		}
 
-		res, err := server.GetServiceStatus()
-		if err != nil {
-			t.Errorf("should not have error: %s", err.Error())
-		}
+		res := server.GetServiceStatus()
 
 		if res.Status != ServerHealthy {
 			t.Errorf("server should be healty: %s", res.Status)

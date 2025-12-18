@@ -2,7 +2,9 @@ package servive_monitor
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -47,37 +49,44 @@ func SetupServiceMonitor() (ServiceMonitor, error) {
 	return service, nil
 }
 
-func (sm ServiceMonitor) GetServiceStatus() (ServerResponse, error) {
-	reses, err := sm.CallServices()
+func (sm ServiceMonitor) GetServiceStatus() ServerResponse {
+	reses := sm.CallServices()
 	start := time.Now().UTC()
-	if err != nil {
-		return ServerResponse{}, err
-	}
+
 	return ServerResponse{
 		Status:    checkHealth(reses),
 		Timestamp: start.Format(time.RFC3339),
 		Service:   reses,
-	}, nil
-
+	}
 }
 
-func (sm ServiceMonitor) CallServices() ([]Response, error) {
-	var errs []error
-	var responses []Response
+func (sm ServiceMonitor) CallServices() []Response {
+	client := http.Client{}
+
+	results := make(chan Response)
+	var wg sync.WaitGroup
 	for _, server := range sm.Services {
-		// Would have been nice to paralalise this so the total does not take too long
-		res, err := CallEndpoints(server)
-		if err != nil {
-			errs = append(errs, err)
-		} else {
-			responses = append(responses, res)
-		}
+		wg.Add(1)
+
+		go func(srv Service) {
+			defer wg.Done()
+
+			res := CallEndpoints(srv, client)
+			results <- res
+		}(server)
 	}
 
-	if len(errs) != 0 {
-		return nil, fmt.Errorf("there was an issue reaching the services, check internet connection and try again")
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	var responses []Response
+	for res := range results {
+		responses = append(responses, res)
 	}
-	return responses, nil
+
+	return responses
 }
 
 func checkHealth(responses []Response) ServerStatus {

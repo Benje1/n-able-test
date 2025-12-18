@@ -21,15 +21,7 @@ func main() {
 	http.HandleFunc("/health/aggregate", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		status, err := server.GetServiceStatus()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-
-			json.NewEncoder(w).Encode(map[string]string{
-				"error": err.Error(),
-			})
-			return
-		}
+		status := server.GetServiceStatus()
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(status)
