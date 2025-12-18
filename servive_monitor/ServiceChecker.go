@@ -1,6 +1,7 @@
 package servive_monitor
 
 import (
+	"context"
 	"net/http"
 	"time"
 )
@@ -36,15 +37,30 @@ func (res Response) UpdateFileds() Response {
 	}
 }
 
-func CallEndpoints(service Service) (Response, error) {
-	client := http.Client{
-		Timeout: time.Duration(service.Timeout) * time.Millisecond,
+func CallEndpoints(service Service, client http.Client) Response {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(service.Timeout))
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, service.Url, nil)
+
+	if err != nil {
+		errStr := "could not make requst"
+		return Response{
+			Name:   service.Name,
+			Status: "could not make request, error in creating request",
+			Error:  &errStr,
+		}
 	}
 
 	start := time.Now()
-	resp, err := client.Get(service.Url)
+	resp, err := client.Do(req)
 	if err != nil {
-		return Response{}, err
+		errStr := err.Error()
+		return Response{
+			Name:   service.Name,
+			Status: "could not complete requst",
+			Error:  &errStr,
+		}
 	}
 
 	defer resp.Body.Close()
@@ -59,7 +75,7 @@ func CallEndpoints(service Service) (Response, error) {
 		ResponseTime: &duration,
 	}
 
-	return respo.UpdateFileds(), nil
+	return respo.UpdateFileds()
 }
 
 func getStatusFromCode(code int) Status {
