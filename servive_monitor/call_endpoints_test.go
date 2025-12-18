@@ -25,17 +25,20 @@ func TestCallEndpoints(t *testing.T) {
 		}
 	})
 
-	// t.Run("test timeout with 200", func(t *testing.T) {
-	// 	service := Service{
-	// 		Name:    "200",
-	// 		Url:     "https://htt.pavonz.com/200",
-	// 		Timeout: 1,
-	// 	}
+	t.Run("test timeout with 200", func(t *testing.T) {
+		service := Service{
+			Name:    "200",
+			Url:     "https://htt.pavonz.com/200",
+			Timeout: 1,
+		}
 
-	// 	// No response as would be nil
-	// 	_ := CallEndpoints(service, client)
+		// No response as would be nil
+		res := CallEndpoints(service, client)
 
-	// })
+		if *res.Error != "Get \"https://htt.pavonz.com/200\": context deadline exceeded" {
+			t.Error(*res.Error)
+		}
+	})
 
 	t.Run("test get non 2xx code", func(t *testing.T) {
 		service := Service{
