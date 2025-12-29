@@ -3,6 +3,7 @@ package servive_monitor
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -37,7 +38,7 @@ func (res Response) UpdateFileds() Response {
 	}
 }
 
-func CallEndpoints(service Service, client http.Client) Response {
+func CallEndpoints(service Service, client *http.Client) Response {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(service.Timeout)*time.Millisecond)
 	defer cancel()
 
@@ -84,4 +85,16 @@ func getStatusFromCode(code int) Status {
 	}
 
 	return Down
+}
+
+func worker(
+	client *http.Client,
+	jobs <-chan Service,
+	results chan<- Response,
+	wg *sync.WaitGroup,
+) {
+	defer wg.Done()
+	for srv := range jobs {
+		results <- CallEndpoints(srv, client)
+	}
 }

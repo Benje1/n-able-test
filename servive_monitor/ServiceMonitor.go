@@ -64,17 +64,23 @@ func (sm ServiceMonitor) CallServices() []Response {
 	client := http.Client{}
 
 	results := make(chan Response)
+	jobs := make(chan Service)
+
+	// This could/should be an env var
+	const maxWorkers int = 5
 	var wg sync.WaitGroup
-	for _, server := range sm.Services {
-		wg.Add(1)
 
-		go func(srv Service) {
-			defer wg.Done()
-
-			res := CallEndpoints(srv, client)
-			results <- res
-		}(server)
+	wg.Add(maxWorkers)
+	for i := 0; i < maxWorkers; i++ {
+		go worker(&client, jobs, results, &wg)
 	}
+
+	go func() {
+		for _, server := range sm.Services {
+			jobs <- server
+		}
+		close(jobs)
+	}()
 
 	go func() {
 		wg.Wait()
