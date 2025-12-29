@@ -14,7 +14,7 @@ func TestCallEndpoints(t *testing.T) {
 			Timeout: 5000,
 		}
 
-		res := CallEndpoints(service, client)
+		res := CallEndpoints(service, &client)
 
 		if res.Status != Healthy {
 			t.Error("status should be healthy")
@@ -33,7 +33,7 @@ func TestCallEndpoints(t *testing.T) {
 		}
 
 		// No response as would be nil
-		res := CallEndpoints(service, client)
+		res := CallEndpoints(service, &client)
 
 		if *res.Error != "Get \"https://htt.pavonz.com/200\": context deadline exceeded" {
 			t.Error(*res.Error)
@@ -47,7 +47,7 @@ func TestCallEndpoints(t *testing.T) {
 			Timeout: 5000,
 		}
 
-		res := CallEndpoints(service, client)
+		res := CallEndpoints(service, &client)
 
 		if *res.Error != "500 Internal Server Error" {
 			t.Errorf("error should be internal error: got %s", *res.Error)
