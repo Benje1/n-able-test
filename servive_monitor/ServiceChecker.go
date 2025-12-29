@@ -39,6 +39,7 @@ func (res Response) UpdateFileds() Response {
 }
 
 func CallEndpoints(service Service, client *http.Client) Response {
+	start := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(service.Timeout)*time.Millisecond)
 	defer cancel()
 
@@ -53,7 +54,6 @@ func CallEndpoints(service Service, client *http.Client) Response {
 		}
 	}
 
-	start := time.Now()
 	resp, err := client.Do(req)
 	if err != nil {
 		errStr := err.Error()
