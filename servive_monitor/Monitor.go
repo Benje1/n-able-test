@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"sync"
 	"time"
 
@@ -52,6 +53,14 @@ func SetupServiceMonitor() (Monitor, error) {
 func (sm Monitor) GetServiceStatus() MonitorResponse {
 	reses := sm.CallServices()
 	start := time.Now().UTC()
+
+	// Sorting the slice so that the down servers are first
+	sort.Slice(reses, func(i, j int) bool {
+		if reses[i].Status == reses[j].Status {
+			return false
+		}
+		return reses[i].Status == Down
+	})
 
 	return MonitorResponse{
 		Status:    checkHealth(reses),
