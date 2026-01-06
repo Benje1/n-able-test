@@ -55,18 +55,28 @@ func (sm Monitor) GetServiceStatus() MonitorResponse {
 	start := time.Now().UTC()
 
 	// Sorting the slice so that the down servers are first
-	sort.Slice(reses, func(i, j int) bool {
-		if reses[i].Status == reses[j].Status {
-			return false
-		}
-		return reses[i].Status == Down
-	})
+	reses = prioritiseDown(reses)
 
 	return MonitorResponse{
 		Status:    checkHealth(reses),
 		Timestamp: start.Format(time.RFC3339),
 		Service:   reses,
 	}
+}
+
+func prioritiseDown(resp []ServiceResponse) []ServiceResponse {
+	down := make([]ServiceResponse, 0)
+	up := make([]ServiceResponse, 0)
+
+	for _, res := range resp {
+		if res.Status == Down {
+			down = append(down, res)
+		} else {
+			up = append(up, res)
+		}
+	}
+
+	return append(down, up...)
 }
 
 func (sm Monitor) CallServices() []ServiceResponse {
