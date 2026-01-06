@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ServiceMonitor struct {
+type Monitor struct {
 	Services []Service `yaml:"services"`
 }
 
@@ -20,50 +20,50 @@ type Service struct {
 	Timeout uint   `yaml:"timeout_ms"`
 }
 
-type ServerResponse struct {
-	Status    ServerStatus `json:"status"`
-	Timestamp string       `json:"timestamp"`
-	Service   []Response   `json:"services"`
+type MonitorResponse struct {
+	Status    MonitorStatus     `json:"status"`
+	Timestamp string            `json:"timestamp"`
+	Service   []ServiceResponse `json:"services"`
 }
 
 // Reducing typo possibility
-type ServerStatus string
+type MonitorStatus string
 
 const (
-	ServerHealthy  ServerStatus = "healthy"
-	ServerDegraded ServerStatus = "degraded"
-	ServerDown     ServerStatus = "down"
+	ServerHealthy  MonitorStatus = "healthy"
+	ServerDegraded MonitorStatus = "degraded"
+	ServerDown     MonitorStatus = "down"
 )
 
-func SetupServiceMonitor() (ServiceMonitor, error) {
+func SetupServiceMonitor() (Monitor, error) {
 	data, err := os.ReadFile("services.yaml")
 	if err != nil {
-		return ServiceMonitor{}, fmt.Errorf("could not read yaml file, file is either missing or not named 'services.yaml': %w", err)
+		return Monitor{}, fmt.Errorf("could not read yaml file, file is either missing or not named 'services.yaml': %w", err)
 	}
 
-	var service ServiceMonitor
+	var service Monitor
 	if err := yaml.Unmarshal(data, &service); err != nil {
-		return ServiceMonitor{}, fmt.Errorf("could not read yaml file, file mignt not be in correct format: %w", err)
+		return Monitor{}, fmt.Errorf("could not read yaml file, file mignt not be in correct format: %w", err)
 	}
 
 	return service, nil
 }
 
-func (sm ServiceMonitor) GetServiceStatus() ServerResponse {
+func (sm Monitor) GetServiceStatus() MonitorResponse {
 	reses := sm.CallServices()
 	start := time.Now().UTC()
 
-	return ServerResponse{
+	return MonitorResponse{
 		Status:    checkHealth(reses),
 		Timestamp: start.Format(time.RFC3339),
 		Service:   reses,
 	}
 }
 
-func (sm ServiceMonitor) CallServices() []Response {
+func (sm Monitor) CallServices() []ServiceResponse {
 	client := http.Client{}
 
-	results := make(chan Response)
+	results := make(chan ServiceResponse)
 	jobs := make(chan Service)
 
 	// This could/should be an env var
@@ -87,7 +87,7 @@ func (sm ServiceMonitor) CallServices() []Response {
 		close(results)
 	}()
 
-	var responses []Response
+	var responses []ServiceResponse
 	for res := range results {
 		responses = append(responses, res)
 	}
@@ -95,7 +95,7 @@ func (sm ServiceMonitor) CallServices() []Response {
 	return responses
 }
 
-func checkHealth(responses []Response) ServerStatus {
+func checkHealth(responses []ServiceResponse) MonitorStatus {
 	checker := make(map[string]struct{})
 	for _, res := range responses {
 		checker[string(res.Status)] = struct{}{}

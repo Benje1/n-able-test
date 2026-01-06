@@ -5,7 +5,7 @@ import "testing"
 // Happy path test only due to lack of time
 func TestServiceMonitor(t *testing.T) {
 	t.Run("Test happy path server", func(t *testing.T) {
-		server := ServiceMonitor{
+		server := Monitor{
 			Services: []Service{
 				Service{
 					Name:    "200",
@@ -27,7 +27,7 @@ func TestServiceMonitor(t *testing.T) {
 	})
 
 	t.Run("Test mixed response", func(t *testing.T) {
-		server := ServiceMonitor{
+		server := Monitor{
 			Services: []Service{
 				Service{
 					Name:    "200",
@@ -59,7 +59,7 @@ func TestServiceMonitor(t *testing.T) {
 	})
 
 	t.Run("Test service down", func(t *testing.T) {
-		server := ServiceMonitor{
+		server := Monitor{
 			Services: []Service{
 				Service{
 					Name:    "500",

@@ -7,38 +7,38 @@ import (
 	"time"
 )
 
-type Response struct {
-	Name         string  `json:"name"`
-	Status       Status  `json:"status"`
-	ResponseTime *uint   `json:"response_time_ms,omitempty"`
-	Error        *string `json:"error,omitempty"`
+type ServiceResponse struct {
+	Name         string        `json:"name"`
+	Status       ServiceStatus `json:"status"`
+	ResponseTime *uint         `json:"response_time_ms,omitempty"`
+	Error        *string       `json:"error,omitempty"`
 }
 
-type Status string
+type ServiceStatus string
 
 const (
-	Healthy Status = "healthy"
-	Down    Status = "down"
+	Healthy ServiceStatus = "healthy"
+	Down    ServiceStatus = "down"
 )
 
 // There must be a better way of doing this but I was short on time
 // Only returning the properties that are wanted
-func (res Response) UpdateFileds() Response {
+func (res ServiceResponse) SanitiseFields() ServiceResponse {
 	if res.Status == Down {
-		return Response{
+		return ServiceResponse{
 			Name:   res.Name,
 			Status: res.Status,
 			Error:  res.Error,
 		}
 	}
-	return Response{
+	return ServiceResponse{
 		Name:         res.Name,
 		Status:       res.Status,
 		ResponseTime: res.ResponseTime,
 	}
 }
 
-func CallEndpoints(service Service, client *http.Client) Response {
+func CallEndpoints(service Service, client *http.Client) ServiceResponse {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(service.Timeout)*time.Millisecond)
 	defer cancel()
@@ -47,7 +47,7 @@ func CallEndpoints(service Service, client *http.Client) Response {
 
 	if err != nil {
 		errStr := "could not make requst"
-		return Response{
+		return ServiceResponse{
 			Name:   service.Name,
 			Status: "could not make request, error in creating request",
 			Error:  &errStr,
@@ -57,7 +57,7 @@ func CallEndpoints(service Service, client *http.Client) Response {
 	resp, err := client.Do(req)
 	if err != nil {
 		errStr := err.Error()
-		return Response{
+		return ServiceResponse{
 			Name:   service.Name,
 			Status: "could not complete requst",
 			Error:  &errStr,
@@ -68,7 +68,7 @@ func CallEndpoints(service Service, client *http.Client) Response {
 
 	duration := uint(time.Since(start).Milliseconds())
 
-	respo := Response{
+	respo := ServiceResponse{
 		Name:   service.Name,
 		Status: getStatusFromCode(resp.StatusCode),
 		// Should have a function that modifies this error
@@ -76,10 +76,10 @@ func CallEndpoints(service Service, client *http.Client) Response {
 		ResponseTime: &duration,
 	}
 
-	return respo.UpdateFileds()
+	return respo.SanitiseFields()
 }
 
-func getStatusFromCode(code int) Status {
+func getStatusFromCode(code int) ServiceStatus {
 	if code >= 200 && code < 300 {
 		return Healthy
 	}
@@ -90,7 +90,7 @@ func getStatusFromCode(code int) Status {
 func worker(
 	client *http.Client,
 	jobs <-chan Service,
-	results chan<- Response,
+	results chan<- ServiceResponse,
 	wg *sync.WaitGroup,
 ) {
 	defer wg.Done()

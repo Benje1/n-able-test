@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-var server servive_monitor.ServiceMonitor
+var server servive_monitor.Monitor
 
 // Main sets up the service by reading the yaml config file
 // Each call to the endpoint calls the same existing server
