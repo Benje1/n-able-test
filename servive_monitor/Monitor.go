@@ -51,8 +51,8 @@ func SetupServiceMonitor() (Monitor, error) {
 }
 
 func (sm Monitor) GetServiceStatus() MonitorResponse {
-	reses := sm.CallServices()
 	start := time.Now().UTC()
+	reses := sm.CallServices()
 
 	// Sorting the slice so that the down servers are first
 	reses = prioritiseDown(reses)
