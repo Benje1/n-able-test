@@ -7,7 +7,7 @@ func TestServiceMonitor(t *testing.T) {
 	t.Run("Test happy path server", func(t *testing.T) {
 		server := Monitor{
 			Services: []Service{
-				Service{
+				{
 					Name:    "200",
 					Url:     "https://htt.pavonz.com/200",
 					Timeout: 500,
@@ -29,12 +29,12 @@ func TestServiceMonitor(t *testing.T) {
 	t.Run("Test mixed response", func(t *testing.T) {
 		server := Monitor{
 			Services: []Service{
-				Service{
+				{
 					Name:    "200",
 					Url:     "https://htt.pavonz.com/200",
 					Timeout: 500,
 				},
-				Service{
+				{
 					Name:    "Teapot",
 					Url:     "https://htt.pavonz.com/418",
 					Timeout: 500,
@@ -61,7 +61,7 @@ func TestServiceMonitor(t *testing.T) {
 	t.Run("Test service down", func(t *testing.T) {
 		server := Monitor{
 			Services: []Service{
-				Service{
+				{
 					Name:    "500",
 					Url:     "https://htt.pavonz.com/500",
 					Timeout: 500,
